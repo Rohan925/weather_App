@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:weather/networking.dart';
+import 'location.dart';
+
+const apikey = 'your apikey';
 
 class LoadingScreen extends StatefulWidget {
   const LoadingScreen({super.key});
@@ -9,14 +12,29 @@ class LoadingScreen extends StatefulWidget {
 }
 
 class _LoadingScreenState extends State<LoadingScreen> {
-  void getLocation() async {
+  double? latitude;
+  double? longitude;
 
-    Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.low);
-    print(position);
+  void getLocationData() async {
+    Location location = Location();
+    await location.getCurrentLocation();
 
+    latitude = location.latitude;
+    longitude = location.longitude;
 
+    getData();
   }
+
+  void getData() async {
+    NetworkBrain networkBrain = NetworkBrain(
+      url:
+      'https://api.openweathermap.org/data/2.5/weather?lat=$latitude&lon=$longitude&appid=$apikey',
+    );
+
+    var weatherData = await networkBrain.getData();
+    print(weatherData);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,6 +56,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
                 fontSize: 25.0,
                 fontFamily: 'PoppinsBold',
                 fontWeight: FontWeight.w600,
+                color: Colors.white,
               ),
             ),
           ),
@@ -45,7 +64,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 68.5),
             child: Text(
-              'Get to Know Your Weather Maps And Redar Precipitation Forecast',
+              'Get to Know Your Weather Maps And Radar Precipitation Forecast',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14.0,
@@ -54,18 +73,14 @@ class _LoadingScreenState extends State<LoadingScreen> {
               ),
             ),
           ),
-          SizedBox(
-            height: 55.5,
-
-          ),
+          const SizedBox(height: 55.5),
           GestureDetector(
-            onTap: (){
-              getLocation()
-
+            onTap: () {
+              getLocationData();
             },
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 20),
-              padding: EdgeInsets.all(19),
+              padding: const EdgeInsets.all(19),
               height: 58.0,
               decoration: BoxDecoration(
                 color: Colors.blue.shade600,
@@ -74,7 +89,6 @@ class _LoadingScreenState extends State<LoadingScreen> {
               child: const Center(
                 child: Text(
                   'Get Weather',
-                  textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 15.0,
                     fontFamily: 'PoppinsRegular',
